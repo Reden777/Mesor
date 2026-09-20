@@ -26,8 +26,16 @@ checked.
 ## Implemented language core
 
 - case-insensitive names and order-independent declarations;
-- `To run:` and English-template procedures with any number of mutable typed parameters;
+- statement-stream parsing, including wrapped declarations, wrapped statements,
+  inline routine bodies, and semicolon-linked routine aliases;
+- optional `To run:` and English-template procedures with overloads and any
+  number of mutable typed parameters;
 - primitive numbers, reals, flags, strings, globals, and local `Privatize`;
+- aliases with automatic reduction, typed pointers, `NIL`, `TARGET`,
+  `WHEREABOUTS`, counted fields, and dynamic `some ...` collections;
+- mutable strings with assignment, append, prepend, concatenation, and length;
+- allocation/deallocation primitives, external DLL/shared-library calls, and
+  C-compatible callback entry points;
 - exact scaled integers and automatic conversion inside one unit family;
 - explicit `AS A REAL`, while scaled-unit addition with a raw real is rejected;
 - scaled multiplication with round-to-nearest base unit;
@@ -36,6 +44,12 @@ checked.
 - flat `IF condition, action; action.` statements;
 - one `LOOP...REPEAT` per routine, with `BREAK`.
 - `EXIT` as an early return to the caller (`return 0` only in `To run`).
+
+Historical `INTEL $...` statements are retained in generated code as an
+explicit runtime trap. Arbitrary 32-bit x86 instruction bytes cannot execute
+portably through a C89 backend (and cannot execute on ARM hosts). They are never
+silently ignored. The historical noodle's embedded WAV resources are also not
+part of the portable language runtime; a `wave` hex initializer becomes empty.
 
 Scaled values are stored as integer counts of their family's smallest declared
 root unit. Thus `12.5 millimeters`, when a millimeter is 1000 micrometers, is
