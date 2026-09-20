@@ -27,6 +27,8 @@ To run:
 
 It has to support syntax like: `A roundy box is a box with a radius.` per the EBNF
 
+'More Original Documents' folder contains original plain english CAL-4700 compiler files
+
 A comment on scaled integers: **No, they should NOT be freely combinable in general arithmetic (addition and subtraction).** 
 
 If you make them freely combinable, you run into what language designers call **"The Float Contamination Problem,"** and you will instantly destroy the entire reason you added scaled integers in the first place.
