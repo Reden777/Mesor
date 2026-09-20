@@ -1,4 +1,4 @@
-\ copyright © 2006, 2017 the osmosian order (4700)
+\ copyright ¬© 2006, 2017 the osmosian order (4700)
 
 \ here are the text rules:
 \   in a non-wrapped text, the rows end with a return byte.
@@ -4858,7 +4858,7 @@ Append "%%EOF" to the pdf.
 
 To end printing a pdf (append header):
 Append "%PDF-1.3" then the crlf string to the pdf.
-Append "%‚„œ”" then the crlf string to the pdf.
+Append "%√¢√£√è√ì" then the crlf string to the pdf.
 Append the crlf string to the pdf.
 
 To end printing a pdf (append the outline entries - create the objects):
