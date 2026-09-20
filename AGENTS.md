@@ -1,2 +1,127 @@
 Transform the ebnf into a language. The language must compile to go, or if that's not possible (strictly not possible) then to c.
 It's a human language, easy to write and to reason about.
+
+Inspired by Osmosian's Plain English...
+
+Rules to follow:
+1. Case insensitive: Upper, lower, or mixed case are identical.
+2. Order independent: Declare types, routines, and globals anywhere in any file.
+3. No nested IFs: Every conditional is a flat IF condition, action; action.
+4. No nested LOOPs: Only one LOOP...REPEAT per routine. If you need an inner loop, factor it out into a sub-procedure.
+5. No OOP (No methods/inheritance): Flat records and automatic type reduction only (A roundy box is a box with...).
+
+The EBNF specifies fractions, but I think I will drop them and instead replace them by **first class scaled integers**:
+
+something like:
+
+```
+A millimeter is 1000 micrometers.
+A centimeter is 10 millimeters.
+A dollar is 100 cents.
+
+To run:
+  Put 12.5 millimeters into a width.
+  Put 2.25 dollars into a price.
+  Add 0.75 dollars to the price.
+```
+
+It has to support syntax like: `A roundy box is a box with a radius.` per the EBNF
+
+A comment on scaled integers: **No, they should NOT be freely combinable in general arithmetic (addition and subtraction).** 
+
+If you make them freely combinable, you run into what language designers call **"The Float Contamination Problem,"** and you will instantly destroy the entire reason you added scaled integers in the first place.
+
+However, there is a **very specific, elegant middle ground** that languages like Ada and modern physics engines use.
+
+Here is why they should be kept separate, and the one exception where they make sense together:
+
+---
+
+### 1. The "Float Contamination" Problem
+
+Why did you add scaled integers? 
+To guarantee **exactness**, **zero rounding drift**, and **predictable integer execution** (e.g., $10.50\text{ dollars}$ or $12.5\text{ mm}$).
+
+Look at what happens if the compiler silently combines them:
+```text
+Put 10.50 dollars into the balance.    \ Stored as integer 1050 cents
+Add 0.1 to the balance.                \ 0.1 is an IEEE 754 float!
+```
+
+If the compiler promotes `balance` to a float, your exact integer becomes:
+$$\mathbf{10.600000000000000532...}$$
+Your exact financial or metric unit has just been **contaminated** by binary floating-point rounding error. The moment a float touches a scaled integer, all the benefits of Master Kronecker's integer math vanish.
+
+---
+
+### 2. The Dimensional Nonsense Problem
+
+In a human-language compiler like NeoPascal, adding a raw, dimensionless float to a scaled unit **makes no physical sense**:
+
+* What does `Add 2.5 to 10 millimeters` mean?
+  * Did the programmer mean $2.5\text{ millimeters}$?
+  * Did they mean $2.5\text{ meters}$?
+  * Or are they trying to add a dimensionless abstract number to a physical length?
+
+In English prose, that sentence is a category error. A disciplined compiler should stop the programmer right there:
+```text
+COMPILER ERROR: Cannot add a dimensionless number to millimeters.
+Did you mean: Add 2.5 millimeters to the length?
+```
+
+---
+
+### 3. The One Clean Exception: Scaling (Multiplication & Division)
+
+While **adding** a float to a scaled integer is nonsense, **multiplying** or **scaling** a unit by a float is completely natural in everyday human language and physics:
+
+$$\text{Length} + \text{Scalar} = \text{Nonsense}$$
+$$\text{Length} \times \text{Scalar} = \mathbf{\text{Length}}$$
+
+It makes total sense to say:
+```text
+Multiply the width by 1.5.
+Scale the box's height by 0.75.
+```
+
+Here, `1.5` is not a length; it is a **dimensionless scalar multiplier**. 
+
+#### How your compiler handles this under the hood:
+1. `width` is a scaled integer (e.g. $12,500\text{ \mu m}$).
+2. The compiler converts `12500` to float temporarily: $12500.0 \times 1.5 = 18750.0$.
+3. It rounds the result back to the nearest whole integer: `18750` ($18.75\text{ mm}$).
+4. The result remains a clean, exact scaled integer!
+
+---
+
+### 4. How to Handle Conversions: The Plain English Way
+
+What if a programmer *genuinely* needs to turn a scaled integer into a float (for example, to pass it into a graphics trigonometry function like `sin` or `cos`)?
+
+Don't do it with implicit compiler magic. Use the syntax already built into your EBNF and the manual (Page 59 & Page 111):
+
+#### Explicit Coercion (`AS A REAL`):
+```text
+Put the width AS A REAL into a float.
+```
+
+#### Explicit Conversion:
+```text
+Convert the temperature to a real.
+```
+
+This ensures that whenever a programmer crosses the boundary between **exact integer reality** and **approximate floating-point reality**, it is an explicit, conscious choice.
+
+---
+
+### Summary Rules for NeoPascal
+
+| Operation | Allowed? | Meaning / Result |
+| :--- | :---: | :--- |
+| `ScaledInt + ScaledInt` (same unit) | **YES** | Exact integer arithmetic ($12\text{ mm} + 5\text{ mm} = 17\text{ mm}$). |
+| `ScaledInt + ScaledInt` (different unit)| **YES** | Auto-scaled ($1\text{ cm} + 2\text{ mm} = 12\text{ mm}$). |
+| `ScaledInt + Float` | ❌ **ERROR** | Category error; prevents float contamination. |
+| `ScaledInt * Float` (Scalar multiplier) | **YES** | Multiplies, rounds to nearest base unit. |
+| `ScaledInt AS A REAL` | **YES** | Explicit cast into floating-point land. |
+
+This gives you the best of all worlds: **Ada's strict dimensional safety**, **the speed of raw hardware**, and the **clarity of Plain English prose.**
