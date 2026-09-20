@@ -139,6 +139,64 @@ To run:
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "7\n")
 
+    def test_exit_returns_from_procedure(self):
+        result, generated = self.compile('''
+To stop early:
+ Write "inside" to the standard output.
+ Exit.
+ Write "unreachable" to the standard output.
+To run:
+ Stop early.
+ Write "caller" to the standard output.
+''')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "inside\ncaller\n")
+        self.assertIn("return;", generated)
+        self.assertNotIn("exit(0)", generated)
+
+    def test_exit_returns_from_main(self):
+        result, generated = self.compile('''
+To run:
+ Write "before" to the standard output.
+ Exit.
+ Write "unreachable" to the standard output.
+''')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "before\n")
+        self.assertIn("return 0;", generated)
+
+    def test_two_parameter_procedure_template(self):
+        result, generated = self.compile('''
+To combine a number called source with a number called destination:
+ Add the source to the destination.
+To run:
+ Privatize a number called left.
+ Privatize a number called right.
+ Put 4 into the left.
+ Put 5 into the right.
+ Combine the left with the right.
+ Write the right to the standard output.
+''')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "9\n")
+        self.assertIn("np_combine_with(&(np_left), &(np_right));", generated)
+
+    def test_draw_a_box_with_a_color_template(self):
+        result, _ = self.compile('''
+A box has a number called width.
+A color has a number called shade.
+To draw a box with a color:
+ Put the color's shade into the box's width.
+To run:
+ Privatize a box called shape.
+ Privatize a color called ink.
+ Put 8 into the ink's shade.
+ Draw the shape with the ink.
+ Write the shape's width to the standard output.
+''')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "8\n")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -26,7 +26,7 @@ checked.
 ## Implemented language core
 
 - case-insensitive names and order-independent declarations;
-- `To run:` and procedures with mutable typed parameters;
+- `To run:` and English-template procedures with any number of mutable typed parameters;
 - primitive numbers, reals, flags, strings, globals, and local `Privatize`;
 - exact scaled integers and automatic conversion inside one unit family;
 - explicit `AS A REAL`, while scaled-unit addition with a raw real is rejected;
@@ -35,6 +35,7 @@ checked.
 - `Put`, `Add`, `Subtract`, `Scale`/`Multiply`, `Write`, procedure calls;
 - flat `IF condition, action; action.` statements;
 - one `LOOP...REPEAT` per routine, with `BREAK`.
+- `EXIT` as an early return to the caller (`return 0` only in `To run`).
 
 Scaled values are stored as integer counts of their family's smallest declared
 root unit. Thus `12.5 millimeters`, when a millimeter is 1000 micrometers, is

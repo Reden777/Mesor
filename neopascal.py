@@ -89,6 +89,7 @@ class Param:
 class Routine:
     name: str
     params: list[Param]
+    call_parts: list[str]
     lines: list[Line]
     header: Line
 
@@ -269,23 +270,39 @@ class Compiler:
     def _parse_routine_header(self, text: str, line: Line, body: list[Line]) -> Routine:
         text = key(text)
         if text == "run":
-            return Routine("run", [], body, line)
-        # Bootstrap syntax keeps the routine's verb/name before its parameters.
-        marker = re.search(r"\s+an?\s+", text)
-        if not marker:
-            return Routine(text, [], body, line)
-        name = text[:marker.start()]
-        rest = text[marker.start():].strip()
+            return Routine("run", [], ["run"], body, line)
+        # A routine header is also its call template. In
+        # "draw a box with a color", DRAW and WITH are fixed words while the
+        # two article-led portions are parameters.
+        articles = list(re.finditer(r"(?:^|\s)an?\s+", text))
+        if not articles:
+            return Routine(text, [], [text], body, line)
+        prefix = text[:articles[0].start()].strip()
+        if not prefix:
+            raise line.error("A routine needs a verb before its first parameter")
         params: list[Param] = []
-        parts = re.split(r"\s+and\s+(?=an?\s+)", rest)
-        for part in parts:
-            match = re.fullmatch(r"an?\s+(.+?)(?:\s+called\s+(.+))?", part)
-            if not match:
-                raise line.error(f"Invalid routine parameter '{part}'")
+        call_parts = [prefix]
+        separators = {"and", "with", "to", "from", "by", "into", "in", "of", "on", "before", "after"}
+        for index, article in enumerate(articles):
+            start = article.end()
+            end = articles[index + 1].start() if index + 1 < len(articles) else len(text)
+            descriptor = text[start:end].strip()
+            separator = ""
+            if index + 1 < len(articles):
+                words = descriptor.split()
+                if not words or words[-1] not in separators:
+                    raise line.error("Parameters in a routine header must be separated by a phrase such as WITH or AND")
+                separator = words.pop()
+                descriptor = " ".join(words)
+            match = re.fullmatch(r"(.+?)(?:\s+called\s+(.+))?", descriptor)
+            if not match or not descriptor:
+                raise line.error(f"Invalid routine parameter '{descriptor}'")
             type_name = self._type_key(match.group(1))
             param_name = key(match.group(2) or match.group(1))
             params.append(Param(param_name, type_name))
-        return Routine(name, params, body, line)
+            call_parts.append(separator)
+        name = " ".join(part for part in call_parts if part)
+        return Routine(name, params, call_parts, body, line)
 
     def _type_key(self, value: str) -> str:
         value = key(value)
@@ -409,7 +426,7 @@ class Compiler:
                 in_loop = False
                 code.append("    }")
                 continue
-            code.extend(self._emit_statement(text, line, env, "        " if in_loop else "    ", in_loop))
+            code.extend(self._emit_statement(text, line, env, "        " if in_loop else "    ", in_loop, main))
         if in_loop: raise routine.header.error("LOOP has no matching REPEAT")
         out = [signature + " {"] + local_decls + code
         if main: out.append("    return 0;")
@@ -422,7 +439,7 @@ class Compiler:
         if type_name == "pointer": return "NULL"
         return "0"
 
-    def _emit_statement(self, text: str, line: Line, env: dict[str, tuple[str, str]], indent: str, in_loop: bool) -> list[str]:
+    def _emit_statement(self, text: str, line: Line, env: dict[str, tuple[str, str]], indent: str, in_loop: bool, main: bool) -> list[str]:
         text = text.strip()
         if not text.endswith("."):
             raise line.error("Every statement must end with a period")
@@ -436,7 +453,7 @@ class Compiler:
             emitted = [indent + f"if ({condition}) {{"]
             for action in actions:
                 if re.match(r"(?i)^if\s+", action): raise line.error("Nested IF statements are forbidden")
-                emitted.extend(self._emit_statement(action + ".", line, env, indent + "    ", in_loop))
+                emitted.extend(self._emit_statement(action + ".", line, env, indent + "    ", in_loop, main))
             emitted.append(indent + "}")
             return emitted
         match = re.fullmatch(r"(?i)write\s+(.+?)\s+to\s+(?:the\s+)?standard output", bare)
@@ -467,25 +484,41 @@ class Compiler:
             if not in_loop: raise line.error("BREAK can only appear inside LOOP...REPEAT")
             return [indent + "break;"]
         if re.fullmatch(r"(?i)exit", bare):
-            return [indent + "exit(0);"]
-        # Procedure call: Increment the counter.  All arguments are lvalues.
+            return [indent + ("return 0;" if main else "return;")]
+        # Procedure calls follow the fixed/parameter template from the header.
+        # All bootstrap procedure arguments are mutable lvalues.
         for routine in self.routines.values():
             if routine.name == "run": continue
-            prefix = routine.name
-            if key(bare) == prefix and not routine.params:
-                return [indent + f"{ident(prefix)}();"]
-            if key(bare).startswith(prefix + " ") and len(routine.params) == 1:
-                arg = self._variable(bare[len(prefix):].strip(), line, env)
-                if not self._compatible(arg.type_name, routine.params[0].type_name):
-                    raise line.error(f"Routine expects {routine.params[0].type_name}, got {arg.type_name}")
+            arguments = self._match_call(routine, bare)
+            if arguments is None:
+                continue
+            emitted_args = []
+            for argument, parameter in zip(arguments, routine.params):
+                arg = self._variable(argument, line, env)
+                if not self._compatible(arg.type_name, parameter.type_name):
+                    raise line.error(f"Routine expects {parameter.type_name}, got {arg.type_name}")
                 address = f"&({arg.code})"
-                expected = routine.params[0].type_name
+                expected = parameter.type_name
                 if arg.type_name != expected and arg.type_name in self.records and expected in self.records:
                     # Derived records flatten base fields first, so the prefix is
                     # layout-compatible with its base record in emitted C.
                     address = f"({self._c_type(expected)} *){address}"
-                return [indent + f"{ident(prefix)}({address});"]
+                emitted_args.append(address)
+            return [indent + f"{ident(routine.name)}({', '.join(emitted_args)});"]
         raise line.error(f"Unsupported or unknown statement: '{bare}'")
+
+    @staticmethod
+    def _match_call(routine: Routine, text: str) -> list[str] | None:
+        if not routine.params:
+            return [] if key(text) == routine.call_parts[0] else None
+        pattern = "^" + re.escape(routine.call_parts[0]) + r"\s+"
+        for index in range(len(routine.params)):
+            pattern += r"(.+?)" if index + 1 < len(routine.params) else r"(.+)"
+            separator = routine.call_parts[index + 1]
+            if separator:
+                pattern += r"\s+" + re.escape(separator) + r"\s+"
+        match = re.fullmatch(pattern, key(text), re.IGNORECASE)
+        return list(match.groups()) if match else None
 
     def _add_sub(self, source: str, target_text: str, op: str, line: Line, env: dict[str, tuple[str, str]]) -> str:
         value = self._expression(source, line, env)
