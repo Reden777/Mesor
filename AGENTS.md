@@ -125,3 +125,104 @@ This ensures that whenever a programmer crosses the boundary between **exact int
 | `ScaledInt AS A REAL` | **YES** | Explicit cast into floating-point land. |
 
 This gives you the best of all worlds: **Ada's strict dimensional safety**, **the speed of raw hardware**, and the **clarity of Plain English prose.**
+
+---
+
+Another comment:
+
+Start with **C89**. Hands down.
+
+When creating a new programming language, your biggest enemy in the first few weeks is **"fighting two wars at the same time"**:
+1. *War 1:* Is your parser correctly understanding the Plain English grammar?
+2. *War 2:* Is your backend correctly generating valid machine instructions, registers, and memory layouts?
+
+If you start with LLVM IR or QBE, a bug in your compiler produces an opaque assembler crash, an LLVM assertion failure, or a silent segfault. You won't know if the bug was in your English parser or in your SSA code generator.
+
+If you start with **C89**, everything becomes transparent.
+
+---
+
+### Why C89 is the Ultimate "First Backend"
+
+#### 1. Human-Readable Debugging
+When your compiler emits code that doesn't work, you can simply open `output.c` in a text editor:
+```c
+/* Generated from: To increment a number: */
+void increment(int64_t *number) {
+    *number += 1;
+}
+```
+You can read it with your own eyes, spot typos in your code generator immediately, and understand exactly what your parser produced.
+
+#### 2. The Host C Compiler Acts as Your Free Co-Pilot
+When you compile the generated `output.c` with `gcc -Wall` or `clang -Wall`:
+* If your type checker has a flaw, GCC/Clang will tell you:
+  `error: passing argument 1 of 'increment' from incompatible pointer type`.
+* The C compiler’s error messages will debug your own language semantics for you while you are still stabilizing the frontend.
+
+#### 3. TCC Gives You the "Osmosian Speed" on Day One
+If you install the **Tiny C Compiler (`tcc`)** (which is only a 300 KB download):
+```bash
+neopascal myprogram.pe
+tcc -run output.c
+```
+TCC compiles and executes C code **in under 10 milliseconds**. You get the instantaneous, 2-second edit-compile-run loop that Gerry Rzeppa loved, without having to write a single line of native machine-code generation.
+
+#### 4. The Runtime Library is Just a Simple Header File
+Plain English needs basic memory primitives and console I/O. In C89, your initial `runtime.h` is trivial:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+typedef struct {
+    char *first;
+    char *last;
+} PE_Substring;
+
+void pe_write_stdout(PE_Substring *str) {
+    fwrite(str->first, 1, str->last - str->first + 1, stdout);
+    fputc('\n', stdout);
+}
+```
+You don't have to write low-level system calls or assembly glue; you lean on the C standard library.
+
+---
+
+### The Realistic Roadmap
+
+Build it in this exact order:
+
+```text
+Phase 1 (Now)     ───► C89 Backend
+                        └─ Get the grammar, types, records, and flat loops working.
+                        └─ Run it with TCC for instant test feedback.
+
+Phase 2 (Next)    ───► QBE or Go Backend
+                        └─ If you want standalone native binaries without GCC: QBE.
+                        └─ If you want cloud, Wasm, and garbage collection: Go.
+
+Phase 3 (Later)   ───► LLVM IR Backend
+                        └─ For extreme optimization, SIMD, and production polish.
+```
+
+Almost every legendary language that started with a small team or single creator—**C++ (Cfront), Nim, Nelua, V, and even Inform 7 (via Inter)**—started by emitting C.
+
+It gets you from a blank screen to a working, runnable language in days rather than months.
+
+### Your Target for "Day 1"
+Don't worry about the whole manual yet. Your first goal is simply to have your compiler read this:
+```text
+To run:
+  Write "Hello, world!" to the standard output.
+```
+and emit:
+```c
+#include "runtime.h"
+
+int main(void) {
+    pe_write_stdout_lit("Hello, world!");
+    return 0;
+}
+```
+The moment that compiles and runs, **NeoPascal is alive.**
