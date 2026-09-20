@@ -24,6 +24,18 @@ class CompilerTests(unittest.TestCase):
         self.assertEqual(result.stdout, "Hello, world!\n")
         self.assertIn("int main(void)", generated)
 
+    def test_ascii_box(self):
+        source = (ROOT / "examples" / "ascii_box.neo").read_text()
+        result, _ = self.compile(source)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, (
+            "+----------+\n"
+            "|          |\n"
+            "| NeoPascal|\n"
+            "|          |\n"
+            "+----------+\n"
+        ))
+
     def test_scaled_units_are_exact(self):
         result, _ = self.compile('''
 A micrometer is a unit.
