@@ -4,16 +4,16 @@ The matching source files live in [`../examples`](../examples).
 
 ## Hello World
 
-```neopascal
+```mesor
 To run:
   Write "Hello, world!" to the standard output.
 ```
 
-Run it with `./neopascal examples/hello.neo --run`.
+Run it with `./mesor examples/hello.neo --run`.
 
 ## Exact Dimensions and Money
 
-```neopascal
+```mesor
 A micrometer is a unit.
 A millimeter is 1000 micrometers.
 A cent is a unit.
@@ -35,14 +35,14 @@ This writes `18750` and `300`: root-unit counts, not formatted values.
 
 ## An ASCII Box
 
-```neopascal
+```mesor
 To write border:
   Write "+----------+" to the standard output.
 
 To run:
   Write border.
   Write "|          |" to the standard output.
-  Write "| NeoPascal|" to the standard output.
+  Write "| Mesor|" to the standard output.
   Write "|          |" to the standard output.
   Write border.
 ```
@@ -54,13 +54,13 @@ To run:
 `app.neo` may refer to a unit declared in another input file, even if `app.neo`
 appears first:
 
-```neopascal
+```mesor
 The starting amount is 2 millimeters.
 To run:
   Write the starting amount to the standard output.
 ```
 
-```neopascal
+```mesor
 A millimeter is 1000 micrometers.
 A micrometer is a unit.
 ```
@@ -68,5 +68,5 @@ A micrometer is a unit.
 Compile both files together:
 
 ```sh
-./neopascal app.neo units.neo --run
+./mesor app.neo units.neo --run
 ```

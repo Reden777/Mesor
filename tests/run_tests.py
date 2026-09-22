@@ -14,7 +14,7 @@ class CompilerTests(unittest.TestCase):
             exe = Path(directory) / "test"
             cfile = Path(directory) / "test.c"
             src.write_text(source)
-            args = ["python3", str(ROOT / "neopascal.py"), str(src), "--emit-c", str(cfile)]
+            args = ["python3", str(ROOT / "mesor.py"), str(src), "--emit-c", str(cfile)]
             if run: args += ["-o", str(exe), "--run"]
             return subprocess.run(args, text=True, capture_output=True), cfile.read_text() if cfile.exists() else ""
 
@@ -31,7 +31,7 @@ class CompilerTests(unittest.TestCase):
         self.assertEqual(result.stdout, (
             "+----------+\n"
             "|          |\n"
-            "| NeoPascal|\n"
+            "| Mesor|\n"
             "|          |\n"
             "+----------+\n"
         ))
@@ -270,7 +270,7 @@ To run:
  Write the values's first to the standard output.
 ''')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, "NeoPascal\n4\n")
+        self.assertEqual(result.stdout, "Mesor\n4\n")
 
     def test_library_source_does_not_require_run(self):
         result, generated = self.compile('To greet: Write "hello" to the standard output.\n', run=False)

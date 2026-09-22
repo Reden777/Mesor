@@ -1,7 +1,7 @@
-# NeoPascal Documentation
+# Mesor Documentation
 
-NeoPascal is an experimental, case-insensitive programming language inspired by
-Osmosian Plain English. Its bootstrap compiler reads NeoPascal source and emits
+Mesor is an experimental, case-insensitive programming language inspired by
+Osmosian Plain English. Its bootstrap compiler reads Mesor source and emits
 readable C89, which a host C compiler turns into an executable.
 
 The language is deliberately small and explicit. Declarations can be spread

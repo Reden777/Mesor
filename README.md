@@ -17,7 +17,7 @@ Compile and run it (TCC is preferred automatically):
 ./mesor examples/hello.neo -o hello
 ./hello
 ./mesor examples/hello.neo --run
-./neopascal examples/ascii_box.neo --run
+./mesor examples/ascii_box.neo --run
 ```
 
 Use `--emit-c output.c` to retain the generated C, and `--cc gcc` to select a

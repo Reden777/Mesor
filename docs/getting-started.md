@@ -1,6 +1,6 @@
 # Getting Started
 
-NeoPascal has no Python package dependencies. You need Python 3 and a C89
+Mesor has no Python package dependencies. You need Python 3 and a C89
 compiler. The compiler tries `tcc`, then `cc`, `gcc`, and `clang`; TCC is useful
 for a quick edit-compile-run cycle.
 
@@ -9,13 +9,13 @@ for a quick edit-compile-run cycle.
 From the repository root, run the included hello-world source:
 
 ```sh
-./neopascal examples/hello.neo --run
+./mesor examples/hello.neo --run
 ```
 
 Or invoke the Python entry point directly:
 
 ```sh
-python3 neopascal.py examples/hello.neo --run
+python3 mesor.py examples/hello.neo --run
 ```
 
 The program prints:
@@ -28,7 +28,7 @@ Hello, world!
 
 Create `hello.neo`:
 
-```neopascal
+```mesor
 To run:
   Write "Hello, world!" to the standard output.
 ```
@@ -36,7 +36,7 @@ To run:
 Compile and run it:
 
 ```sh
-./neopascal hello.neo --run
+./mesor hello.neo --run
 ```
 
 `To run:` is the optional program entry point. A source file without it is a
@@ -44,14 +44,14 @@ library of types, globals, and procedures and can still be compiled to C.
 
 ## Keep the Generated C
 
-NeoPascal normally writes C next to the first input source. Use `--emit-c` to
+Mesor normally writes C next to the first input source. Use `--emit-c` to
 choose and retain the generated file, and `-o` to build an executable:
 
 ```sh
-./neopascal hello.neo --emit-c build/hello.c -o build/hello
+./mesor hello.neo --emit-c build/hello.c -o build/hello
 ```
 
-The generated file includes `runtime.h`, so compile it through NeoPascal or add
+The generated file includes `runtime.h`, so compile it through Mesor or add
 the repository root to your C compiler's include path yourself.
 
 ## Run the Test Suite

@@ -2,7 +2,7 @@
 
 ## Compilation Pipeline
 
-1. `neopascal.py` reads each UTF-8 source file, strips backslash comments, and joins wrapped declarations and statements.
+1. `mesor.py` reads each UTF-8 source file, strips backslash comments, and joins wrapped declarations and statements.
 2. It collects declarations for units, aliases, pointers, records, globals, and routines without requiring source order.
 3. It validates type aliases, record bases, scaled-unit families, routine signatures, and global constants.
 4. It type-checks and emits routine bodies as readable C89.

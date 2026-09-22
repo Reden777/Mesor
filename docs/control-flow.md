@@ -5,7 +5,7 @@
 A routine header is also the template used to call the routine. Parameters are
 introduced with `a`, `an`, `some`, or `another` and are mutable:
 
-```neopascal
+```mesor
 To combine a number called source with a number called destination:
   Add the source to the destination.
 
@@ -20,7 +20,7 @@ To run:
 This sets `right` to `9`. Routines may be overloaded when parameter types
 differ. Use a semicolon header as an alias for the next implementation:
 
-```neopascal
+```mesor
 To announce a string;
 To write a string:
   Write the string to the standard output.
@@ -34,7 +34,7 @@ program.
 An `IF` is one flat statement: condition, comma, then one or more
 semicolon-separated actions. Each action ends at the final period.
 
-```neopascal
+```mesor
 If the count is at least 3, Write the count to the standard output; Break.
 ```
 
@@ -47,7 +47,7 @@ with optional `not`.
 
 Each routine may contain one `LOOP...REPEAT` pair:
 
-```neopascal
+```mesor
 To run:
   Privatize a number called count.
   Loop.
