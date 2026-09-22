@@ -1,6 +1,8 @@
-# NeoPascal
+# Mesor
 
-NeoPascal is a case-insensitive, human-language compiler that emits readable
+(The language is to be renamed to Mesor: Minimal English-based System & Ordered Routines, among other acronyms like Medidor Educativo Simpatico y de Ordenado Rendimiento)
+
+Mesor is a case-insensitive, human-language compiler that emits readable
 C89.  This repository contains the bootstrap compiler and a deliberately small,
 working language core.
 
@@ -12,9 +14,9 @@ To run:
 Compile and run it (TCC is preferred automatically):
 
 ```sh
-./neopascal examples/hello.neo -o hello
+./mesor examples/hello.neo -o hello
 ./hello
-./neopascal examples/hello.neo --run
+./mesor examples/hello.neo --run
 ./neopascal examples/ascii_box.neo --run
 ```
 
@@ -22,6 +24,10 @@ Use `--emit-c output.c` to retain the generated C, and `--cc gcc` to select a
 compiler. Declarations may appear before or after one another and source files
 may be passed together. Type and routine resolution happens before bodies are
 checked.
+
+Full documentation is in [docs/index.md](docs/index.md), including the
+[getting-started guide](docs/getting-started.md), [language reference](docs/language-reference.md),
+and [examples](docs/examples.md).
 
 ## Implemented language core
 

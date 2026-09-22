@@ -1,6 +1,9 @@
-To run:
+To write border:
   Write "+----------+" to the standard output.
+
+To run:
+  Write border.
   Write "|          |" to the standard output.
   Write "| NeoPascal|" to the standard output.
   Write "|          |" to the standard output.
-  Write "+----------+" to the standard output.
+  Write border.

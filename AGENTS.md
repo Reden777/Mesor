@@ -228,3 +228,8 @@ int main(void) {
 }
 ```
 The moment that compiles and runs, **NeoPascal is alive.**
+
+A / An is used when passing an argument into an arbitrary instance of a type:
+To draw a box: (Takes a box argument).
+The (when not referring to an existing variable) is used to create named, zero-parameter actions:
+To write the border: (Pure procedure name, zero arguments).
